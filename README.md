@@ -35,3 +35,75 @@
 ## 가용 시간
 
 주 1 ~ 2회로 회당 2~3시간 정도 작업을 진행할 예정
+
+## 설계 
+
+### UI 설계
+
+1. **메인 Page**
+    1. Bar
+    2. Page 
+        1. Scroll Rect(가로 세로 모두 스크롤 가능 하도록 구현
+            1. Horizontal Layout Group
+                1. 1열 : 시간(Vertical Layout Group)
+                    1. 30분 단위로 끊어서 아이콘 생성 (10:00~ 21:00 → 시간은 변경 가능)
+                2. 2열 : 장소1 (Vertical Layout Group)
+                    1. (1행) Room Name 
+                    2. (이후) Button Icon
+                        ⇒ 해당 버튼 클릭시 장소 & 순서를 통해 예약 상세 페이지에 예약 날짜 및 장소 데이터 전달
+                        
+                3. 3열 : 장소2 (Vertical Layout Group)
+                    1. (1행) Room Name
+                    2. (이후) Button Icon
+                        ⇒ 해당 버튼 클릭시 장소 & 순서를 통해 예약 상세 페이지에 예약 날짜 및 장소 데이터 전달
+                4. ...
+        2. 주의 사항
+            1. 몇 개의 아이콘을 생성해야 하는지 예약 가능 시간을 통해 알아야 한다.
+
+2. **예약 상세 Page**
+    1. Backgroud
+    2. Page
+        1. Vertical Layour group
+            1. 예약 text
+            2. 회의실 장소명 : 예약 데이터
+            3. 일자 : 날짜, 시작 ~ 끝 시간
+            4. 목적
+            5. 예상 인원
+            6. 예약자 정보: 이름, 교구, 핸드폰
+
+3. **예약 취소 Pop up**
+    1. Page
+        1. Title: “핸드폰 뒷자리 입력시 예약이 취소됩니다”
+        2. Input Field: Number
+        3. Buttons: 예약 취소, 닫기
+
+
+### 데이터 설계
+``` C#
+class TableModel : ScriptableObject
+{
+    DateTime Today;
+    List<Room> Rooms;
+}
+```
+
+``` C#
+class Room : ScriptableObject
+{
+    List<ReservationInfo> ReservationInfos;
+}
+```
+
+``` C#
+class ReservatrionInfo : ScriptableObject
+{
+    bool isOccupied;
+    string booker;
+    string RoomName;
+    DateTime Today;
+    DateTime StartTime;
+    DateTIme EndTime;
+    string Purpose;
+    int ExpectedNum;
+}
+```
