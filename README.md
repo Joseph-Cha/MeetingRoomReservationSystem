@@ -78,21 +78,7 @@
         3. Buttons: 예약 취소, 닫기
 
 
-### 데이터 설계
-``` C#
-class TableModel : ScriptableObject
-{
-    DateTime Today;
-    List<Room> Rooms;
-}
-```
-
-``` C#
-class Room : ScriptableObject
-{
-    List<ReservationInfo> ReservationInfos;
-}
-```
+## 데이터 설계
 
 ``` C#
 class ReservatrionInfo : ScriptableObject
@@ -107,3 +93,104 @@ class ReservatrionInfo : ScriptableObject
     int ExpectedNum;
 }
 ```
+
+## Page class 설계
+
+### **MainScene.cs**
+
+Fields
+
+1. string Path
+
+Methods
+
+1. Awake()
+2. LoadCanvas(string path) : void
+3. LoadMainPage(string path) : void
+
+### **MainPage.cs**
+
+각 RoomPage를 생성
+
+실제 각 회의실의 시간별 예약 정보는 RoomPage에서 get & set 
+
+Fields
+
+1. RoomPage RoomPagePrefab
+2. Transform ContentParent
+3. Enum RoomName {a, b, c, d ..}
+
+Methods
+
+1. Awake()
+2. InstantiateRoomPages(string path) : void
+    
+    [→ Enum의 갯수만큼 생성](https://afsdzvcx123.tistory.com/entry/C-%EB%AC%B8%EB%B2%95-C-Enum-Count-%EA%B0%80%EC%A0%B8%EC%98%A4%EB%8A%94-%EB%B0%A9%EB%B2%95)
+    
+3. OnNextPage() : void
+    
+    → ShowTodayRoomPages(true)
+    
+4. OnPreviousPage() : void
+    
+    → ShowTodayRoomPages(false)
+    
+5. ShowTodayRoomPages(DateTime today, bool isNextPage) : void
+    
+    → RoomPage.ShowTodayInfo(DateTime today
+    
+
+### **RoomPage.cs**
+
+Fields
+
+1. Enum RoomName
+2. Icon IconPrefab
+3. List<ReservatrionInfo> ReservatrionInfos
+
+Methods
+
+1. Awake()
+2. LoadReservatrionInfo() : List<ReservatrionInfo>
+3. SetReservatrionInfo(List<ReservatrionInfo> info) : void
+    
+    → Icon.isOccupied = info.isOccupied
+    
+
+### **Icon.cs**
+
+Fields
+
+1. bool isOccupied
+    
+    → set: ShowOccupied(isOccupied)
+    
+2. ReservationDetailsPage page
+3. ReservatrionInfo info
+4. Button ReservationButton
+
+Methods
+
+1. ShowOccupied(bool isOccupied)
+2. ShowReservationDetailsPage(ReservatrionInfo info)
+
+### ReservationDetailsPage.cs
+
+Fields
+
+1. Icon Icon
+2. Text RoomName
+3. Text DateTime
+4. Calendar ReservationDate
+5. InputField Purpose
+6. Text ReservationNumber
+7. Text PersonName
+8. Text AffiliationName
+9. Text PhoneNumber
+10. Button SaveButton
+11. Button CloseButton
+
+Methods
+
+1. OnSave()
+2. OnClose
