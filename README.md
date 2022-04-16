@@ -78,21 +78,23 @@
         3. Buttons: 예약 취소, 닫기
 
 
-## 데이터 설계
+### 데이터 설계
 
-``` C#
-class ReservatrionInfo : ScriptableObject
-{
-    bool isOccupied;
-    string booker;
-    string RoomName;
-    DateTime Today;
-    DateTime StartTime;
-    DateTIme EndTime;
-    string Purpose;
-    int ExpectedNum;
-}
-```
+### **ReservatrionInfo : ScriptableObject**
+
+1. Enum CurrentRoomName
+2. bool isOccupied
+3. string booker
+4. DateTime Today
+5. DateTime StartTime
+6. DateTIme EndTime
+7. string Purpose
+8. int ExpectedNum
+
+### EventBinding : **ScriptableObject**
+
+1. UnityAction<DateTime> OnRoomInfoLoaded
+2. UnityAction<ReservationInfo> OnReservationInfoLoaded
 
 ## Page class 설계
 
@@ -119,25 +121,32 @@ Fields
 1. RoomPage RoomPagePrefab
 2. Transform ContentParent
 3. Enum RoomName {a, b, c, d ..}
+4. DateTime Today
+5. EventBinding EventBinding
+6. Button NextDayButton
+7. Button PreviousDayButton
 
 Methods
 
 1. Awake()
-2. InstantiateRoomPages(string path) : void
+    
+    → InstantiateRoomPages(string path) : void
+    
+2. OnEnable()
+    
+    → EventBinding.OnRoomInfoLoaded(DateTime today)
+    
+3. InstantiateRoomPages(string path) : void
     
     [→ Enum의 갯수만큼 생성](https://afsdzvcx123.tistory.com/entry/C-%EB%AC%B8%EB%B2%95-C-Enum-Count-%EA%B0%80%EC%A0%B8%EC%98%A4%EB%8A%94-%EB%B0%A9%EB%B2%95)
     
-3. OnNextPage() : void
+4. OnNextPage() : void
     
-    → ShowTodayRoomPages(true)
+    → EventBinding.OnRoomInfoLoaded(DateTime today)
     
-4. OnPreviousPage() : void
+5. OnPreviousPage() : void
     
-    → ShowTodayRoomPages(false)
-    
-5. ShowTodayRoomPages(DateTime today, bool isNextPage) : void
-    
-    → RoomPage.ShowTodayInfo(DateTime today
+    → EventBinding.OnRoomInfoLoaded(DateTime today)
     
 
 ### **RoomPage.cs**
@@ -147,14 +156,15 @@ Fields
 1. Enum RoomName
 2. Icon IconPrefab
 3. List<ReservatrionInfo> ReservatrionInfos
+4. EventBinding EventBinding
 
 Methods
 
 1. Awake()
-2. LoadReservatrionInfo() : List<ReservatrionInfo>
-3. SetReservatrionInfo(List<ReservatrionInfo> info) : void
+2. ShowTodayInfo(DateTime today)
+3. LoadReservatrionInfos() : List<ReservatrionInfo>
     
-    → Icon.isOccupied = info.isOccupied
+    → EventBinding.OnReservationInfoLoaded.Invoke(ReservationInfo info)
     
 
 ### **Icon.cs**
@@ -165,14 +175,20 @@ Fields
     
     → set: ShowOccupied(isOccupied)
     
-2. ReservationDetailsPage page
-3. ReservatrionInfo info
-4. Button ReservationButton
+2. string Name
+3. ReservationDetailsPage page
+4. ReservationInfo info
+5. Button ReservationButton
 
 Methods
 
-1. ShowOccupied(bool isOccupied)
-2. ShowReservationDetailsPage(ReservatrionInfo info)
+1. Awake()
+    
+    → EventBinding.OnReservationInfoLoaded += ShowOccupied
+    
+2. OnReservationButton()
+3. ShowOccupied(ReservatrionInfo info)
+4. ShowReservationDetailsPage(ReservatrionInfo info)
 
 ### ReservationDetailsPage.cs
 
@@ -194,3 +210,55 @@ Methods
 
 1. OnSave()
 2. OnClose
+
+## 시나리오를 중심으로 메서드 흐름 정리
+
+**예약 시나리오**
+
+다음날 선택 → 시간 및 장소 선택 → 예약자 세부 정보 입력 → 저장
+
+**메서드 흐름**
+
+1. Today Page Load & Event Binding
+    
+    MainScene.Awake()
+    
+    → LoadCanvas(string path) : void
+    
+    → LoadMainPage(string path) : void
+    
+    MainPage.Awake()
+    
+    → InstantiateRoomPages(string path) : void
+    
+    RoomPage.Awake()
+    
+    → EventBinding += ShowTodayInfo
+    
+    RoomPage.Start()
+    
+    → ShowTodayInfo(DateTime today)
+    
+2. 시나리오
+    
+    다음날 선택
+    
+    MainPage.OnNextDayButton.Invoke()
+    
+    → EventBinding.OnRoomInfoLoaded.Invoke(DateTime today)
+    
+    RoomPage.ShowTodayInfo(DateTime today)
+    
+    → LoadReservatrionInfos()
+    
+    → EventBinding.OnReservationInfoLoaded.Invoke(ReservationInfo info)
+    
+    Icon.ShowOccupied(ReservationInfo info)
+    
+    시간 및 장소 선택
+    
+    Icon.ReservationButton.Invoke()
+    
+    → OnReservationButton()
+    
+    → ShowReservationDetailsPage(ReservationInfo info)
